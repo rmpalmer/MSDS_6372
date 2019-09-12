@@ -161,5 +161,39 @@ ggplot(iridium_stats,aes(x=DepthCat,y=Mean,group=Strata,colour=Strata))+
   geom_errorbar(aes(ymin=Mean-SE,ymax=Mean+SE),width=.1)
 ```
 
+It seems that an additive model would be appropriate.  The shape of the two
+curves, for Limestone and for Shale, are largely the same.  There is a bit of
+a departure at the shallowest depth category, but the variance in the shale
+observations is high there, so the true population values may still be represented
+by an additive model.  
+
+Fit a non-additive 2-way anova model
+```{r}
+iridium.fit <- aov(Iridium~DepthCat+Strata+DepthCat:Strata,data=ex1317)
+par(mfrow=c(1,2))
+plot(iridium.fit$fitted.values, iridium.fit$residuals, ylab="Residuals",xlab="Fitted")
+qqnorm(iridium.fit$residuals)
+```
+
+Type 3 Anova F-Tests.
+
+```{r}
+Anova(iridium.fit,type=3)
+```
+
+Do the changes in mean iridium level by strata depend on the depth?
+
+No, the interaction between DepthCat and Strat is not statistically 
+significant, so the associattion betwween strata and iriduam level is
+not affected by depth.  In other words, the association between
+strata and iriduam level is depth-independent.
+
+
+
+
+
+
+
+
 
 
