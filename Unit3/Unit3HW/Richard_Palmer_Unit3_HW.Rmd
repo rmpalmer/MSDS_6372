@@ -9,6 +9,9 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(car)
+library(lsmeans)
 ```
 
 ## Conceptual Questions
@@ -44,5 +47,103 @@ They will say nothing about the particular levels of any factor.
 
 ## Exercises
 
-###
+### ACT scores revisited
+
+```{r summaries}
+ACT<-read.csv("../Unit3PreLive/MathACT.csv")
+#Attaching the data set, creating a function, and creating a summary stats table.  Note: In line 44 below, you can add other statistics like median, IQR,etc.
+attach(ACT)
+mysummary<-function(x){
+  result<-c(length(x),mean(x),sd(x),sd(x)/length(x),min(x),max(x),IQR(x))
+  names(result)<-c("N","Mean","SD","SE","Min","Max","IQR")
+  return(result)
+}
+sumstats<-aggregate(Score~Background*Sex,data=ACT,mysummary)
+sumstats<-cbind(sumstats[,1:2],sumstats[,-(1:2)])
+sumstats
+```
+
+Standard Error plot
+```{r}
+ggplot(sumstats,aes(x=Background,y=Mean,group=Sex,colour=Sex))+
+  ylab("ACT Score")+
+  geom_line()+
+  geom_point()+
+  geom_errorbar(aes(ymin=Mean-SE,ymax=Mean+SE),width=.1)+
+  ggtitle("Original SE-based error plot")
+```
+
+Error (raw SD) plot
+```{r}
+ggplot(sumstats,aes(x=Background,y=Mean,group=Sex,colour=Sex))+
+  ylab("ACT Score")+
+  geom_line()+
+  geom_point()+
+  geom_errorbar(aes(ymin=Mean-SD,ymax=Mean+SD),width=.1)+
+  ggtitle("New SD-based error plot")
+```
+
+The SD-based error plot is more indicative of the actual data variances,
+since it is not modified with the size of the data sample.
+
+### Conducting a Two Way ANOVA analysis in R
+
+Fit the model 
+```{r modelfit}
+model.fit<-aov(Score~Background+Sex+Background:Sex,data=ACT)
+```
+
+Use Tukey HSD to make all pairwise comparisons
+```{r modelfit }
+TukeyHSD(model.fit,"Background:Sex",conf.level=.95)
+```
+
+What contrasts are we interested in?
+```{r}
+contrast.factor<-~Background*Sex
+mycontrast<-c("amale-afemale","bmale-bfemale","cmale-cfemale")
+dat<-ACT
+```
+
+Turner's magic code
+```{r}
+library(limma)
+final.result<-c()
+for( j in 1:length(mycontrast)){
+contrast.factor.names<-gsub(" ", "", unlist(strsplit(as.character(contrast.factor),split = "*", fixed = T))[-1])
+contrast.factor.2 <- vector("list", length(contrast.factor.names))
+for (i in 1:length(contrast.factor.names)) {
+  contrast.factor.2[[i]] <- levels(dat[, contrast.factor.names[i]])
+}
+new.factor.levels <- do.call(paste, c(do.call(expand.grid, 
+                                              contrast.factor.2), sep = ""))
+temp.cont<-mycontrast[j]
+contrast2 <- list(comparison = as.vector(do.call(makeContrasts, 
+                                                list(contrasts = temp.cont, levels = new.factor.levels))))
+contrast.result <- summary(contrast(lsmeans(model.fit, 
+                                            contrast.factor), contrast2, by = NULL))
+final.result<-rbind(final.result,contrast.result)
+}
+#Cleaning up and applying bonferroni correction to the number
+#of total comparisons investigated.
+final.result$contrast<-mycontrast
+final.result$bonf<-length(mycontrast)*final.result$p.value
+final.result$bonf[final.result$bonf>1]<-1
+final.result
+
+```
+
+The Tukey method produces for a:male to a:female a mean difference
+estimate of 2.3851626.  Looking at the specific contrast of interest
+also produces 2.3851626.  The p-value from Tukey HSD is 0.0854058,
+while that from the contrats is 0.024165.  The difference can be
+attributed to the larger family-wise error rate assumed by TukeyHSD,
+which is making all possible pair-wise corrections.  When looking 
+at three of the comparisons, there there are only three pair-wise
+comparisons, so the adjustment is smaller.
+
+
+
+
+
 
