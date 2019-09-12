@@ -94,7 +94,7 @@ model.fit<-aov(Score~Background+Sex+Background:Sex,data=ACT)
 ```
 
 Use Tukey HSD to make all pairwise comparisons
-```{r modelfit }
+```{r tukey }
 TukeyHSD(model.fit,"Background:Sex",conf.level=.95)
 ```
 
@@ -142,8 +142,24 @@ which is making all possible pair-wise corrections.  When looking
 at three of the comparisons, there there are only three pair-wise
 comparisons, so the adjustment is smaller.
 
+### Iridium Depth
 
+Get the data
+```{r}
+library(Sleuth3)
+iridium_stats <- aggregate(Iridium~Strata*DepthCat,data=ex1317,mysummary)
+iridium_stats <- cbind(iridium_stats[,1:2],iridium_stats[,-(1:2)])
+iridium_stats
+```
 
+Do a means plot
+```{r}
+ggplot(iridium_stats,aes(x=DepthCat,y=Mean,group=Strata,colour=Strata))+
+  ylab("Iridium Level")+
+  geom_line()+
+  geom_point()+
+  geom_errorbar(aes(ymin=Mean-SE,ymax=Mean+SE),width=.1)
+```
 
 
 
