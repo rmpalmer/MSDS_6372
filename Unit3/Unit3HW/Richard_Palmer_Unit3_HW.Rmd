@@ -1,0 +1,48 @@
+---
+title: "Homework 3"
+author: "Richard Palmer"
+date: "9/11/2019"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Conceptual Questions
+
+### Necessary Assumptions for Two Way ANOVA
+
+- The populations are approximately normal
+- Independence of Samples
+- Equal variance among populations
+- Groups must have the same sample size
+
+### Interaction between two explanatory variables means..
+
+That the nature of the effect one explanatory variable has on
+the dependent variable is dependent on the value of the other 
+explanatory variable.
+
+### The family wise error rate is ..
+
+The probability of making at least one Type 1 error (incorrectly rejecting the null
+hypothesis when it is in fact true) among all the t-test comparisons that are 
+done in an analysis.
+
+It is an issue for ANOVA because ANOVA implicitly includes many sample comparisons.
+The probability of making at least one error grows with the number of 
+comparions that are made.
+
+### The overall type-III sums of squares F-test's allow the analysis to determine
+where specific differences lie between levels.
+
+FALSE.  The F-test's will only indicate which factors are statically significant;
+They will say nothing about the particular levels of any factor.
+
+## Exercises
+
+###
+
