@@ -3,6 +3,7 @@ title: "Homework 3"
 author: "Richard Palmer"
 date: "9/11/2019"
 output:
+  word_document: default
   html_document:
     df_print: paged
 ---
@@ -47,7 +48,7 @@ They will say nothing about the particular levels of any factor.
 
 ## Exercises
 
-### ACT scores revisited
+### Exercise 1 - ACT scores revisited
 
 ```{r summaries}
 ACT<-read.csv("../Unit3PreLive/MathACT.csv")
@@ -86,7 +87,7 @@ ggplot(sumstats,aes(x=Background,y=Mean,group=Sex,colour=Sex))+
 The SD-based error plot is more indicative of the actual data variances,
 since it is not modified with the size of the data sample.
 
-### Conducting a Two Way ANOVA analysis in R
+### Exercise 2 - Conducting a Two Way ANOVA analysis in R
 
 Fit the model 
 ```{r modelfit}
@@ -98,7 +99,7 @@ Use Tukey HSD to make all pairwise comparisons
 TukeyHSD(model.fit,"Background:Sex",conf.level=.95)
 ```
 
-What contrasts are we interested in?
+Define the contrasts that we are interested in.
 ```{r}
 contrast.factor<-~Background*Sex
 mycontrast<-c("amale-afemale","bmale-bfemale","cmale-cfemale")
@@ -142,7 +143,7 @@ which is making all possible pair-wise corrections.  When looking
 at three of the comparisons, there there are only three pair-wise
 comparisons, so the adjustment is smaller.
 
-### Iridium Depth
+### Exercise 3 - Iridium Depth
 
 Get the data
 ```{r}
@@ -175,6 +176,9 @@ plot(iridium.fit$fitted.values, iridium.fit$residuals, ylab="Residuals",xlab="Fi
 qqnorm(iridium.fit$residuals)
 ```
 
+The residuals do appear normally distributed.  The spread appears to be wider at fitted 
+values near 300, so the assumption of constant variance may be violated.
+
 Type 3 Anova F-Tests.
 
 ```{r}
@@ -184,19 +188,41 @@ Anova(iridium.fit,type=3)
 Do the changes in mean iridium level by strata depend on the depth?
 
 No, the interaction between DepthCat and Strat is not statistically 
-significant, so the associattion betwween strata and iriduam level is
+significant, so the association betwween strata and iriduam level is
 not affected by depth.  In other words, the association between
 strata and iriduam level is depth-independent.
 
 Finally, determine what factors contribute to changes in mean iridium.
 
+Look again at the aov model.
 ```{r}
-plot(TukeyHSD(iridium.fit,"DepthCat"))
+summary(iridium.fit)
 ```
 
+From this, we conclude that DeptCat (p value 7.3e-5) and Strata (p value .00325)
+are both statistically significant explanatory variables, but again, that the 
+interaction is not significant.
 
+Do a linear model separately for depth 
+```{r}
+iridium.fit_lm_depth <- lm(Iridium ~ DepthCat,data=ex1317)
+summary(iridium.fit_lm_depth)
 
+```
 
+From this, it appears that only Depth Category 3 is
+has a statistically significant difference from other 
+levels.
 
+Use TukeyHSD to examine the same question.
 
+```{r}
+TukeyHSD(iridium.fit,"DepthCat")
+```
 
+Looking at all the pairwise differences, the only
+pairs that have statistically signifcant differences
+involve a difference with Depth Category 3.
+
+We conclude that only Depth Category 3 has a 
+statistically significant influence on iridium level.
