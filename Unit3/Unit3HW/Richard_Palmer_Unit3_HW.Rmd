@@ -188,8 +188,11 @@ significant, so the associattion betwween strata and iriduam level is
 not affected by depth.  In other words, the association between
 strata and iriduam level is depth-independent.
 
+Finally, determine what factors contribute to changes in mean iridium.
 
-
+```{r}
+plot(TukeyHSD(iridium.fit,"DepthCat"))
+```
 
 
 
