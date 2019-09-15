@@ -194,35 +194,22 @@ strata and iriduam level is depth-independent.
 
 Finally, determine what factors contribute to changes in mean iridium.
 
-Look again at the aov model.
+(re)Examine the ANOVA results
 ```{r}
-summary(iridium.fit)
+Anova(iridium.fit,type=3)
 ```
 
-From this, we conclude that DeptCat (p value 7.3e-5) and Strata (p value .00325)
-are both statistically significant explanatory variables, but again, that the 
-interaction is not significant.
+From this, we conclude that only DepthCat has a statistically
+significant contribution to the model.
 
-Do a linear model separately for depth 
-```{r}
-iridium.fit_lm_depth <- lm(Iridium ~ DepthCat,data=ex1317)
-summary(iridium.fit_lm_depth)
-
-```
-
-From this, it appears that only Depth Category 3 is
-has a statistically significant difference from other 
-levels.
-
-Use TukeyHSD to examine the same question.
+So, use Tukey HSD to determine which levels of the DepthCat factor
+have a statistically significant contribution.
 
 ```{r}
 TukeyHSD(iridium.fit,"DepthCat")
 ```
 
-Looking at all the pairwise differences, the only
-pairs that have statistically signifcant differences
-involve a difference with Depth Category 3.
-
-We conclude that only Depth Category 3 has a 
-statistically significant influence on iridium level.
+From this, the only pairwise comparisons that are significant
+are the ones involving DepthCat 3.  Thus, the only statistically
+signficant predictor in the model of iridium is DepthCat equal to
+three, or not equal to 3.
