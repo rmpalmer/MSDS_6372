@@ -2,7 +2,10 @@
 title: "Unit4 Homework"
 author: "Richard Palmer"
 date: "9/17/2019"
-output: word_document
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -30,4 +33,65 @@ That there is less information from which to create a model.
 
 that it is possible to make predictions about the future values of the time series.
 
-## Exercises
+### The purpose of the Durbin Watson test is...
+
+to detect the presence of serial correlation in a time series.
+
+## Exercise 1
+
+6.  Verity rules of thumb
+
+```{r}
+AR1 <- arima.sim(list(ar=c(0.8)),10000)
+par(mfrow=c(1,3))
+plot(1:10000,AR1,type="l")
+ar1_acf <- acf(AR1,main="ACF")
+ar1_pacf <-pacf(AR1,main="PACF")
+```
+
+The acf clearly decays gradually.  The lag1 autocorrelation is `r unlist(ar1_acf)[2]`.
+
+7.  Repeat 3 times with 50 observations each
+
+```{r}
+AR1_short = arima.sim(list(ar=c(0.8)),50)
+par(mfrow=c(1,3))
+plot(1:50,AR1_short,type="l")
+AR1_short_acf <- acf(AR1_short,main="ACF")
+AR1_short_pacf <-pacf(AR1_short,main="PACF")
+```
+
+The lag1 autocorrelation is `r unlist(AR1_short_acf)[2]`.
+
+```{r}
+AR1_short = arima.sim(list(ar=c(0.8)),50)
+par(mfrow=c(1,3))
+plot(1:50,AR1_short,type="l")
+AR1_short_acf <- acf(AR1_short,main="ACF")
+AR1_short_pacf <-pacf(AR1_short,main="PACF")
+```
+
+The lag1 autocorrelation is `r unlist(AR1_short_acf)[2]`.
+
+```{r}
+AR1_short = arima.sim(list(ar=c(0.8)),50)
+par(mfrow=c(1,3))
+plot(1:50,AR1_short,type="l")
+AR1_short_acf <- acf(AR1_short,main="ACF")
+AR1_short_pacf <-pacf(AR1_short,main="PACF")
+```
+
+The lag1 autocorrelation is `r unlist(AR1_short_acf)[2]`.
+
+8.  Simulate with autocorrlelation set to 0
+
+```{r}
+AR1 <- arima.sim(list(ar=c(0.0)),10000)
+par(mfrow=c(1,3))
+plot(1:10000,AR1,type="l")
+ar1_acf <- acf(AR1,main="ACF")
+ar1_pacf <-pacf(AR1,main="PACF")
+```
+
+## Exercise 2
+
