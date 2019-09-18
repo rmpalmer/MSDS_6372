@@ -235,7 +235,35 @@ AIC(AR5)
 Indeed, the AR4 model, which has the lowest AIC, does appear to have good residual diagnostics.
 
 
+12.  Compare forecast of AR1 with AR4
+
+```{r}
+AR1.fit <- auto.arima(Bill,seasonal=FALSE,stepwise = FALSE,max.p=1,start.p=1,max.d=0,max.q=0)
+plot(forecast(AR1.fit,h=10))
+```
 
 
+```{r}
+AR4.fit <- auto.arima(Bill,seasonal=FALSE,stepwise = FALSE,max.p=4,start.p=4,max.d=0,max.q=0)
+plot(forecast(AR4.fit,h=10))
+```
 
+The AR4 model clearly provides a more realistic prediction than AR1.  The AR1 model is essentially
+quickly decaying to the mean, with widening error bars.  The AR4 model predicts the next cycle in
+a believable way, though its error bars are still widening slightly with increasing time.
+
+13.  Forecast out to 100 observations in the future.
+
+```{r}
+plot(forecast(AR4.fit,h=100))
+```
+
+The forecast must fall back to the mean for a stationary series.  This does occur.  I 
+expect the standard error bars to asymptotically approach the standard deviation of the
+original series, without regard to a specific time sample.  This is because for predicting
+observations 100 steps into the future, there is not going to be a significant difference
+between time 99 and time 100.  Both points in time are very nearly the same distance away
+from where there is recorded data, so the model could not be expected to distinguish them.
+When we go farther into the future, the difference between successive points in time will
+become insignificant.
 
