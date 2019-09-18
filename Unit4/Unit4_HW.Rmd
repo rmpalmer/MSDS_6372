@@ -2,7 +2,9 @@
 title: "Unit 4 HW"
 author: "Turner"
 date: "12/1/2018"
-output: word_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 
@@ -128,8 +130,6 @@ One of your fellow MSDS students was curious if he could model the fluctuations 
 Lets start off by assuming that we did not have access to the temperature data (the student had to work to get that) and just work with what was the easiest available, the monthly electric bill.  A plot of the time series is a good starting point.
 
 ```{r, echo=T}
-#setwd("D:/MSDS6372/HWMark")
-setwd("/Volumes/TRAVELDRIVE/MSDS6372/HWMark")
 library(tseries)
 library(forecast)
 library(ggplot2)
