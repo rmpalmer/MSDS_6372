@@ -2,7 +2,9 @@
 title: "Unit3 HW"
 author: "Turner"
 date: "12/16/2018"
-output: word_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 ## HW Instructions
@@ -35,9 +37,8 @@ The first step in any analysis is appropriately describing the data both numeric
 The following code reads in the ACT data set from our pre live discussion and provides a handy, modifiable, function that can make a quick summary statistics table really quick. 
   
 ```{r summaries}
-setwd("D:/MSDS6372/HWMark")
 
-ACT<-read.csv("MathACT.csv")
+ACT<-read.csv("../Unit3PreLive/MathACT.csv")
 
 
 #Attaching the data set, creating a function, and creating a summary stats table.  Note: In line 44 below, you can add other statistics like median, IQR,etc.

@@ -1,0 +1,215 @@
+---
+title: "Homework 3"
+author: "Richard Palmer"
+date: "9/11/2019"
+output:
+  word_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(car)
+library(lsmeans)
+```
+
+## Conceptual Questions
+
+### Necessary Assumptions for Two Way ANOVA
+
+- The populations are approximately normal
+- Independence of Samples
+- Equal variance among populations
+- Groups must have the same sample size
+
+### Interaction between two explanatory variables means..
+
+That the nature of the effect one explanatory variable has on
+the dependent variable is dependent on the value of the other 
+explanatory variable.
+
+### The family wise error rate is ..
+
+The probability of making at least one Type 1 error (incorrectly rejecting the null
+hypothesis when it is in fact true) among all the t-test comparisons that are 
+done in an analysis.
+
+It is an issue for ANOVA because ANOVA implicitly includes many sample comparisons.
+The probability of making at least one error grows with the number of 
+comparions that are made.
+
+### The overall type-III sums of squares F-test's allow the analysis to determine
+where specific differences lie between levels.
+
+FALSE.  The F-test's will only indicate which factors are statically significant;
+They will say nothing about the particular levels of any factor.
+
+## Exercises
+
+### Exercise 1 - ACT scores revisited
+
+```{r summaries}
+ACT<-read.csv("../Unit3PreLive/MathACT.csv")
+#Attaching the data set, creating a function, and creating a summary stats table.  Note: In line 44 below, you can add other statistics like median, IQR,etc.
+attach(ACT)
+mysummary<-function(x){
+  result<-c(length(x),mean(x),sd(x),sd(x)/length(x),min(x),max(x),IQR(x))
+  names(result)<-c("N","Mean","SD","SE","Min","Max","IQR")
+  return(result)
+}
+sumstats<-aggregate(Score~Background*Sex,data=ACT,mysummary)
+sumstats<-cbind(sumstats[,1:2],sumstats[,-(1:2)])
+sumstats
+```
+
+Standard Error plot
+```{r}
+ggplot(sumstats,aes(x=Background,y=Mean,group=Sex,colour=Sex))+
+  ylab("ACT Score")+
+  geom_line()+
+  geom_point()+
+  geom_errorbar(aes(ymin=Mean-SE,ymax=Mean+SE),width=.1)+
+  ggtitle("Original SE-based error plot")
+```
+
+Error (raw SD) plot
+```{r}
+ggplot(sumstats,aes(x=Background,y=Mean,group=Sex,colour=Sex))+
+  ylab("ACT Score")+
+  geom_line()+
+  geom_point()+
+  geom_errorbar(aes(ymin=Mean-SD,ymax=Mean+SD),width=.1)+
+  ggtitle("New SD-based error plot")
+```
+
+The SD-based error plot is more indicative of the actual data variances,
+since it is not modified with the size of the data sample.
+
+### Exercise 2 - Conducting a Two Way ANOVA analysis in R
+
+Fit the model 
+```{r modelfit}
+model.fit<-aov(Score~Background+Sex+Background:Sex,data=ACT)
+```
+
+Use Tukey HSD to make all pairwise comparisons
+```{r tukey }
+TukeyHSD(model.fit,"Background:Sex",conf.level=.95)
+```
+
+Define the contrasts that we are interested in.
+```{r}
+contrast.factor<-~Background*Sex
+mycontrast<-c("amale-afemale","bmale-bfemale","cmale-cfemale")
+dat<-ACT
+```
+
+Turner's magic code
+```{r}
+library(limma)
+final.result<-c()
+for( j in 1:length(mycontrast)){
+contrast.factor.names<-gsub(" ", "", unlist(strsplit(as.character(contrast.factor),split = "*", fixed = T))[-1])
+contrast.factor.2 <- vector("list", length(contrast.factor.names))
+for (i in 1:length(contrast.factor.names)) {
+  contrast.factor.2[[i]] <- levels(dat[, contrast.factor.names[i]])
+}
+new.factor.levels <- do.call(paste, c(do.call(expand.grid, 
+                                              contrast.factor.2), sep = ""))
+temp.cont<-mycontrast[j]
+contrast2 <- list(comparison = as.vector(do.call(makeContrasts, 
+                                                list(contrasts = temp.cont, levels = new.factor.levels))))
+contrast.result <- summary(contrast(lsmeans(model.fit, 
+                                            contrast.factor), contrast2, by = NULL))
+final.result<-rbind(final.result,contrast.result)
+}
+#Cleaning up and applying bonferroni correction to the number
+#of total comparisons investigated.
+final.result$contrast<-mycontrast
+final.result$bonf<-length(mycontrast)*final.result$p.value
+final.result$bonf[final.result$bonf>1]<-1
+final.result
+
+```
+
+The Tukey method produces for a:male to a:female a mean difference
+estimate of 2.3851626.  Looking at the specific contrast of interest
+also produces 2.3851626.  The p-value from Tukey HSD is 0.0854058,
+while that from the contrats is 0.024165.  The difference can be
+attributed to the larger family-wise error rate assumed by TukeyHSD,
+which is making all possible pair-wise corrections.  When looking 
+at three of the comparisons, there there are only three pair-wise
+comparisons, so the adjustment is smaller.
+
+### Exercise 3 - Iridium Depth
+
+Get the data
+```{r}
+library(Sleuth3)
+iridium_stats <- aggregate(Iridium~Strata*DepthCat,data=ex1317,mysummary)
+iridium_stats <- cbind(iridium_stats[,1:2],iridium_stats[,-(1:2)])
+iridium_stats
+```
+
+Do a means plot
+```{r}
+ggplot(iridium_stats,aes(x=DepthCat,y=Mean,group=Strata,colour=Strata))+
+  ylab("Iridium Level")+
+  geom_line()+
+  geom_point()+
+  geom_errorbar(aes(ymin=Mean-SE,ymax=Mean+SE),width=.1)
+```
+
+It seems that an additive model would be appropriate.  The shape of the two
+curves, for Limestone and for Shale, are largely the same.  There is a bit of
+a departure at the shallowest depth category, but the variance in the shale
+observations is high there, so the true population values may still be represented
+by an additive model.  
+
+Fit a non-additive 2-way anova model
+```{r}
+iridium.fit <- aov(Iridium~DepthCat+Strata+DepthCat:Strata,data=ex1317)
+par(mfrow=c(1,2))
+plot(iridium.fit$fitted.values, iridium.fit$residuals, ylab="Residuals",xlab="Fitted")
+qqnorm(iridium.fit$residuals)
+```
+
+The residuals do appear normally distributed.  The spread appears to be wider at fitted 
+values near 300, so the assumption of constant variance may be violated.
+
+Type 3 Anova F-Tests.
+
+```{r}
+Anova(iridium.fit,type=3)
+```
+
+Do the changes in mean iridium level by strata depend on the depth?
+
+No, the interaction between DepthCat and Strat is not statistically 
+significant, so the association betwween strata and iriduam level is
+not affected by depth.  In other words, the association between
+strata and iriduam level is depth-independent.
+
+Finally, determine what factors contribute to changes in mean iridium.
+
+(re)Examine the ANOVA results
+```{r}
+Anova(iridium.fit,type=3)
+```
+
+From this, we conclude that only DepthCat has a statistically
+significant contribution to the model.
+
+So, use Tukey HSD to determine which levels of the DepthCat factor
+have a statistically significant contribution.
+
+```{r}
+TukeyHSD(iridium.fit,"DepthCat")
+```
+
+From this, the only pairwise comparisons that are significant
+are the ones involving DepthCat 3.  Thus, the only statistically
+signficant predictor in the model of iridium is DepthCat equal to
+three, or not equal to 3.
