@@ -3,10 +3,10 @@ title: "Unit4 Homework"
 author: "Richard Palmer"
 date: "9/17/2019"
 output:
-  word_document: default
-  pdf_document: default
   html_document:
     df_print: paged
+  pdf_document: default
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -320,4 +320,4 @@ AR4_wotemp.forecast <- forecast(AR4_wotemp.fit,h=5)
 accuracy(AR4_wotemp.forecast,Bill[36:40])
 ```
 
-The RMSE on both trainging and test sets is higher when temperature is not included as a predictor.
+The RMSE on both training and test sets is higher when temperature is not included as a predictor.
