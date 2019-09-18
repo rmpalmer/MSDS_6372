@@ -3,9 +3,10 @@ title: "Unit4 Homework"
 author: "Richard Palmer"
 date: "9/17/2019"
 output:
+  word_document: default
+  pdf_document: default
   html_document:
     df_print: paged
-  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -267,3 +268,56 @@ from where there is recorded data, so the model could not be expected to disting
 When we go farther into the future, the difference between successive points in time will
 become insignificant.
 
+13.  Adding a Predictor
+
+Break into training and test
+```{r}
+holdout.test<-window(ts(Bill),start=36)
+train<-Bill[1:35]
+predictor<-AvgTemp[1:35]
+```
+
+Try ordinary least squares.
+```{r}
+simpleols<-arima(train,order=c(0,0,0),xreg=predictor)
+tsdisplay(residuals(simpleols),lag.max=15,main="Resid. Diagnostics of OLS")
+```
+
+AR4 with temperature
+
+```{r}
+AR4_wtemp.fit <- auto.arima(train,xreg=predictor,stepwise = FALSE,max.p=4,start.p=4,max.d=0,max.q=0)
+tsdisplay(residuals(AR4_wtemp.fit),lag.max=15,main="Residual Diagnostics from AR4 with temperature predictor")
+```
+
+Forecast from model with temperature
+```{r}
+plot(forecast(AR4_wtemp.fit,h=5,xreg=AvgTemp[36:40]))
+points(1:length(train),fitted(AR4_wtemp.fit),type="l",col="blue")
+```
+
+AR4 without temperature
+
+```{r}
+AR4_wotemp.fit <- auto.arima(train,seasonal=FALSE,stepwise = FALSE,max.p=4,start.p=4,max.d=0,max.q=0)
+tsdisplay(residuals(AR4_wotemp.fit),lag.max=15,main="Residual Diagnostics from AR4 with temperature predictor")
+```
+
+Forecast from model without temperature
+```{r}
+plot(forecast(AR4_wotemp.fit,h=5))
+points(1:length(train),fitted(AR4_wotemp.fit),type="l",col="blue")
+```
+
+Compare accuracy
+```{r}
+AR4_wtemp.forecast <- forecast(AR4_wtemp.fit,h=5,xreg=AvgTemp[36:40])
+accuracy(AR4_wtemp.forecast,Bill[36:40])
+```
+
+```{r}
+AR4_wotemp.forecast <- forecast(AR4_wotemp.fit,h=5)
+accuracy(AR4_wotemp.forecast,Bill[36:40])
+```
+
+The RMSE on both trainging and test sets is higher when temperature is not included as a predictor.
