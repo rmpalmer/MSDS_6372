@@ -1,0 +1,33 @@
+---
+title: "Unit4 Homework"
+author: "Richard Palmer"
+date: "9/17/2019"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Conceptual Questions
+
+### For a time series to be stationary
+
+- Constant Mean
+- Constant Variance
+- Constant Autocorrelations
+
+### if a timee series model ..
+includes and explantory variable such as time itself, or some other predictor,
+then the original time series of the response is not stationary.
+(FALSE) - this could *hide* nonstationarity, but would not mean it is necessarily present.
+
+### The main drawback of serially correlated observations is..
+
+That there is less information from which to create a model.
+
+### The main advantage of serrially correlated observations is..
+
+that it is possible to make predictions about the future values of the time series.
+
+## Exercises
